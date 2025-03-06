@@ -61,7 +61,7 @@ async def reserve_seat(request: ReservationRequest, background_tasks: Background
 
     return {"message": "success", "seat_id": request.seat_id}
 
-@router.post("/cancleSeat")
+@router.post("/cancelSeat")
 async def cancel_seat(request: CancelRequest, background_tasks: BackgroundTasks):
     db = DB()
     redis = db.redis
