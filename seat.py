@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException
 from starlette.responses import JSONResponse
 
 from DB import DB
-from dtos import Seat, DeleteSeat
+from dtos import Seat, DeleteSeat, UpdateSeat
 
 router = APIRouter()
 
@@ -38,7 +38,7 @@ async def create_seat(request: Seat):
 
 
 @router.post("/update")
-async def update_seat(request: Seat):
+async def update_seat(request: UpdateSeat):
     db = DB()
     mongo_seat = await db.booking_collection.find_one({"seat_id": request.seat_id})
     if not mongo_seat:
@@ -48,7 +48,6 @@ async def update_seat(request: Seat):
         "$set":
             {
                 "user_id": request.user_id,
-                "status": request.status,
             }
     })
 
