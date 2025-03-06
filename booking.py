@@ -1,5 +1,5 @@
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, BackgroundTasks
 from DB import DB
 from dtos import BookingRequest, ReservationRequest, CancelRequest
 from log import log_action
@@ -9,7 +9,7 @@ router = APIRouter()
 
 
 @router.post("/bookSeat")
-async def book_seat(request: BookingRequest):
+async def book_seat(request: BookingRequest, background_tasks: BackgroundTasks):
     redis = DB().redis
     db = DB()
     reserve_seat = await redis.hgetall(f"seat:{request.seat_id}")
@@ -32,12 +32,12 @@ async def book_seat(request: BookingRequest):
     await db.booking_collection.update_one({"seat_id":request.seat_id},{"$set":data})
     await redis.delete(f"seat:{request.seat_id}")
 
-    log_action("booking", request.user_id, request.seat_id, details={"customer_name": request.name})
+    background_tasks.add_task(log_action, "booking", request.user_id, request.seat_id, details={"customer_name": request.name})
 
     return {"message": "success", "seat_id": request.seat_id}
 
 @router.post("/reserveSeat")
-async def reserve_seat(request: ReservationRequest):
+async def reserve_seat(request: ReservationRequest, background_tasks: BackgroundTasks):
     db = DB()
     redis = db.redis
     reserve_seat = await redis.hgetall(f"reserve_seat:{request.seat_id}")
@@ -57,7 +57,7 @@ async def reserve_seat(request: ReservationRequest):
 
     await redis.hset(f"reserve_seat:{request.seat_id}", mapping=data)
     await redis.expire(f"reserve_seat:{request.seat_id}", 300)
-    log_action("reserving", request.user_id, request.seat_id, details={"customer_name": request.name})
+    background_tasks.add_task(log_action, "reserving", request.user_id, request.seat_id, details={"customer_name": request.name})
 
     return {"message": "success", "seat_id": request.seat_id}
 
@@ -66,6 +66,7 @@ async def cancel_seat(request: CancelRequest):
     redis = DB().redis
     seat = await redis.hgetall(f"seat:{request.seat_id}")
     if seat and seat["status"] not in ["booked", "reserved"]:
+async def cancel_seat(request: CancelRequest, background_tasks: BackgroundTasks):
         raise HTTPException(status_code = 406, detail="Seat is available")
     if seat["user_id"] == request.user_id:
         raise HTTPException(status_code = 406, detail="Seat is reserved or booked for someone else")
@@ -78,5 +79,6 @@ async def cancel_seat(request: CancelRequest):
 
     await redis.hset(f"seat:{request.seat_id}", mapping=data)
     log_action("canceling", request.user_id, request.seat_id, details={"customer_name": request.name})
+    background_tasks.add_task(log_action, "canceling", request.user_id, request.seat_id, {"customer_name": request.name})
 
     return {"message": "success", "seat_id": request.seat_id}
