@@ -1,0 +1,7 @@
+setuptools
+uvicorn
+pymongo
+redis
+fastapi
+aioredis
+motor
