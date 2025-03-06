@@ -16,6 +16,8 @@ class DB:
             cls._instance.redis = None
         return cls._instance
 
-    async def init_redis(self):
+    def __init__(self):
         if self.redis is None:
             self.redis = redis.asyncio.from_url(REDIS_HOST, decode_responses=True)
+
+
