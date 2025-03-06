@@ -1,10 +1,12 @@
 
 from fastapi import APIRouter, HTTPException
 from DB import DB
-from dtos import BookingRequest
+from dtos import BookingRequest, ReservationRequest, CancelRequest
 from log import log_action
 
+
 router = APIRouter()
+
 
 @router.post("/bookSeat")
 async def bookSeat(request: BookingRequest):
@@ -31,5 +33,29 @@ async def bookSeat(request: BookingRequest):
     await redis.delete(f"seat:{request.seat_id}")
 
     log_action("booking", request.user_id, request.seat_id, details={"customer_name": request.name})
+
+    return {"message": "success", "seat_id": request.seat_id}
+@router.post("/reserveSeat")
+async def reserveSeat(request: ReservationRequest):
+    db = DB()
+    redis = db.redis
+    reserve_seat = await redis.hgetall(f"reserve_seat:{request.seat_id}")
+    mongo_seat = await db.booking_collection.find_one({"seat_id": request.seat_id})
+
+    if not mongo_seat:
+        raise HTTPException(status_code = 406, detail="Seat was not found.")
+
+    if reserve_seat and reserve_seat["status"] != "available" or mongo_seat["status"] != "available":
+        raise HTTPException(status_code = 406, detail="Seat is not available")
+
+    data = {
+        'id': request.seat_id,
+        'status': 'reserved',
+        'user_id': request.user_id
+    }
+
+    await redis.hset(f"reserve_seat:{request.seat_id}", mapping=data)
+    await redis.expire(f"reserve_seat:{request.seat_id}", 300)
+    log_action("reserving", request.user_id, request.seat_id, details={"customer_name": request.name})
 
     return {"message": "success", "seat_id": request.seat_id}
