@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 
 class BookingRequest(BaseModel):
-    seat_id: str
-    user_id: str
+    seat_id: int
+    user_id: int
     name: str
     data: datetime

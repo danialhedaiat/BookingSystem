@@ -30,5 +30,4 @@ async def get_collection_data(collection_name: str):
     cursor = collection.find({},
                              {"_id":0})  # Get all documents
     documents = await cursor.to_list(length=100)  # Convert to a list (limit 100)
-    print(documents)
     return {"data": documents}

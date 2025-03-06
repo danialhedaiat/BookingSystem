@@ -13,6 +13,7 @@ class DB:
             cls._instance.mongo_client = AsyncIOMotorClient(MONGO_HOST)
             cls._instance.db = cls._instance.mongo_client['booking_system']
             cls._instance.log_collection = cls._instance.db['log']
+            cls._instance.booking_collection = cls._instance.db['seats']
             cls._instance.redis = None
         return cls._instance
 
