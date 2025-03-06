@@ -20,6 +20,7 @@ class ReservationRequest(BaseModel):
 class CancelRequest(BaseModel):
     seat_id: int
     user_id: int
+    name: str
     data: datetime
 
 
