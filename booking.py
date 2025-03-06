@@ -9,7 +9,7 @@ router = APIRouter()
 
 
 @router.post("/bookSeat")
-async def bookSeat(request: BookingRequest):
+async def book_seat(request: BookingRequest):
     redis = DB().redis
     db = DB()
     reserve_seat = await redis.hgetall(f"seat:{request.seat_id}")
@@ -37,7 +37,7 @@ async def bookSeat(request: BookingRequest):
     return {"message": "success", "seat_id": request.seat_id}
 
 @router.post("/reserveSeat")
-async def reserveSeat(request: ReservationRequest):
+async def reserve_seat(request: ReservationRequest):
     db = DB()
     redis = db.redis
     reserve_seat = await redis.hgetall(f"reserve_seat:{request.seat_id}")
