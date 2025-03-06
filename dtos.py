@@ -16,3 +16,18 @@ class ReservationRequest(BaseModel):
     name: str
     data: datetime
 
+
+class CancelRequest(BaseModel):
+    seat_id: int
+    user_id: int
+    data: datetime
+
+
+class Seat(BaseModel):
+    seat_id: int
+    user_id: int
+    status: str
+
+
+class DeleteSeat(BaseModel):
+    seat_id: int

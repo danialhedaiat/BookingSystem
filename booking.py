@@ -35,6 +35,7 @@ async def bookSeat(request: BookingRequest):
     log_action("booking", request.user_id, request.seat_id, details={"customer_name": request.name})
 
     return {"message": "success", "seat_id": request.seat_id}
+
 @router.post("/reserveSeat")
 async def reserveSeat(request: ReservationRequest):
     db = DB()
@@ -57,5 +58,25 @@ async def reserveSeat(request: ReservationRequest):
     await redis.hset(f"reserve_seat:{request.seat_id}", mapping=data)
     await redis.expire(f"reserve_seat:{request.seat_id}", 300)
     log_action("reserving", request.user_id, request.seat_id, details={"customer_name": request.name})
+
+    return {"message": "success", "seat_id": request.seat_id}
+
+@router.post("/cancleSeat")
+async def cancel_seat(request: CancelRequest):
+    redis = DB().redis
+    seat = await redis.hgetall(f"seat:{request.seat_id}")
+    if seat and seat["status"] not in ["booked", "reserved"]:
+        raise HTTPException(status_code = 406, detail="Seat is available")
+    if seat["user_id"] == request.user_id:
+        raise HTTPException(status_code = 406, detail="Seat is reserved or booked for someone else")
+
+    data = {
+        'id': request.seat_id,
+        'status': 'available',
+        'user_id': request.user_id
+    }
+
+    await redis.hset(f"seat:{request.seat_id}", mapping=data)
+    log_action("canceling", request.user_id, request.seat_id, details={"customer_name": request.name})
 
     return {"message": "success", "seat_id": request.seat_id}
