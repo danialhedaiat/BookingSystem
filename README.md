@@ -157,9 +157,9 @@ run docker-compose
 
 # future feature
 
-- make seat id increase automaticly will creating new one
+- make seat id increase automatically will create new one
 - auth service with jwt token 
-- check data for autocanceling booked seat
-
+- check data for auto canceling booked seat
+- make environment variables for MONGO_HOST and REDIS_HOST
 
 
