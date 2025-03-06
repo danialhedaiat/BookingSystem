@@ -4,11 +4,13 @@ import uvicorn
 from fastapi import FastAPI
 
 import booking
+import mongo
 from DB import DB
 
 
 app = FastAPI()
 app.include_router(booking.router)
+app.include_router(mongo.router, prefix="/mongo")
 
 
 @app.get("/")
