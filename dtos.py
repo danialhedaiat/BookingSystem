@@ -21,13 +21,17 @@ class CancelRequest(BaseModel):
     seat_id: int
     user_id: int
     name: str
-    data: datetime
 
 
 class Seat(BaseModel):
     seat_id: int
-    user_id: int
-    status: str
+    user_id: int = None
+    status: str = "available"
+
+
+class UpdateSeat(BaseModel):
+    seat_id: int
+    user_id: int = None
 
 
 class DeleteSeat(BaseModel):
