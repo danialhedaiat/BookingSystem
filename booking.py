@@ -67,18 +67,29 @@ async def cancel_seat(request: CancelRequest):
     seat = await redis.hgetall(f"seat:{request.seat_id}")
     if seat and seat["status"] not in ["booked", "reserved"]:
 async def cancel_seat(request: CancelRequest, background_tasks: BackgroundTasks):
+    db = DB()
+    redis = db.redis
+    reserve_seat = await redis.hgetall(f"reserve_seat:{request.seat_id}")
+    mongo_seat = await db.booking_collection.find_one({"seat_id": request.seat_id})
+
+    if not mongo_seat:
+        raise HTTPException(status_code = 406, detail="Seat was not found.")
+    if (mongo_seat['status'] == "booked" and mongo_seat["user_id"] != request.user_id):
+        raise HTTPException(status_code = 406, detail="Seat is booked for someone else")
+    if mongo_seat["status"] != "booked":
+        raise HTTPException(status_code=406, detail="Seat is not booked!")
+    if reserve_seat and reserve_seat["status"] not in ["booked", "reserved"]:
         raise HTTPException(status_code = 406, detail="Seat is available")
-    if seat["user_id"] == request.user_id:
-        raise HTTPException(status_code = 406, detail="Seat is reserved or booked for someone else")
+    if reserve_seat and reserve_seat["user_id"] == request.user_id:
+        raise HTTPException(status_code = 406, detail="Seat is reserved for someone else")
+
 
     data = {
-        'id': request.seat_id,
         'status': 'available',
-        'user_id': request.user_id
+        'user_id': None
     }
 
-    await redis.hset(f"seat:{request.seat_id}", mapping=data)
-    log_action("canceling", request.user_id, request.seat_id, details={"customer_name": request.name})
+    await db.booking_collection.update_one({"seat_id":request.seat_id},{"$set":data})
     background_tasks.add_task(log_action, "canceling", request.user_id, request.seat_id, {"customer_name": request.name})
 
     return {"message": "success", "seat_id": request.seat_id}
