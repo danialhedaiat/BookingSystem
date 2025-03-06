@@ -62,10 +62,6 @@ async def reserve_seat(request: ReservationRequest, background_tasks: Background
     return {"message": "success", "seat_id": request.seat_id}
 
 @router.post("/cancleSeat")
-async def cancel_seat(request: CancelRequest):
-    redis = DB().redis
-    seat = await redis.hgetall(f"seat:{request.seat_id}")
-    if seat and seat["status"] not in ["booked", "reserved"]:
 async def cancel_seat(request: CancelRequest, background_tasks: BackgroundTasks):
     db = DB()
     redis = db.redis
