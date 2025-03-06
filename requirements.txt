@@ -1,7 +1,6 @@
-setuptools
-uvicorn
-pymongo
-redis
-fastapi
-aioredis
-motor
+setuptools==75.8.2
+uvicorn==0.34.0
+pymongo==4.11.2
+redis==5.2.1
+fastapi==0.115.11
+motor==3.7.0
