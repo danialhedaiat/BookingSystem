@@ -11,8 +11,11 @@ services:
       - redis
       - mongo
     environment:
-      - MONGO_HOST=mongodb://admin:1234@mongo/
+      - MONGO_HOST=mongodb://admin:1234@mongo:27017/
       - REDIS_HOST=redis://redis:6379
+    networks:
+      - backend
+
 
   # Redis service
   redis:
