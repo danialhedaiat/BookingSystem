@@ -1,8 +1,9 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, BackgroundTasks
 from starlette.responses import JSONResponse
 
 from DB import DB
 from dtos import Seat, DeleteSeat, UpdateSeat
+from log import log_action
 
 router = APIRouter()
 
@@ -18,7 +19,7 @@ async def seats():
 
 
 @router.post("/create")
-async def create_seat(request: Seat):
+async def create_seat(request: Seat, background_tasks: BackgroundTasks):
     db = DB()
     mongo_seat = await db.booking_collection.find_one({"seat_id": request.seat_id})
     if mongo_seat:
@@ -33,11 +34,13 @@ async def create_seat(request: Seat):
 
     })
 
+    background_tasks.add_task(log_action, "create seat", request.user_id, request.seat_id)
+
     return {"message": "success", "seat_id": request.seat_id}
 
 
 @router.post("/update")
-async def update_seat(request: UpdateSeat):
+async def update_seat(request: UpdateSeat, background_tasks:BackgroundTasks):
     db = DB()
     mongo_seat = await db.booking_collection.find_one({"seat_id": request.seat_id})
     if not mongo_seat:
@@ -50,16 +53,20 @@ async def update_seat(request: UpdateSeat):
             }
     })
 
+    background_tasks.add_task(log_action, "update seat", request.user_id, request.seat_id)
+
     return {"message": "success", "seat_id": request.seat_id}
 
 
 @router.post("/delete")
-async def delete_seat(request: DeleteSeat):
+async def delete_seat(request: DeleteSeat, background_tasks:BackgroundTasks):
     db = DB()
     mongo_seat = await db.booking_collection.find_one({"seat_id": request.seat_id})
     if not mongo_seat:
         raise HTTPException(status_code=406, detail="id was not fund")
 
     db.booking_collection.delete_one({"seat_id": request.seat_id})
+
+    background_tasks.add_task(log_action, "delete seat", request.user_id, request.seat_id)
 
     return {"message": "success", "seat_id": request.seat_id}
