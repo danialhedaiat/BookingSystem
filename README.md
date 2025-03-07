@@ -160,6 +160,5 @@ run docker-compose
 - Make seat id increase automatically will create new one
 - Auth service with jwt token 
 - Check data for auto canceling booked seat
-- Make environment variables for MONGO_HOST and REDIS_HOST
 - Refactor project to clean architecture
 

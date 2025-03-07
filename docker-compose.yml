@@ -11,8 +11,8 @@ services:
       - redis
       - mongo
     environment:
-      - REDIS_HOST=redis
-      - MONGO_URI=mongodb://admin:1234@mongo:27017
+      - MONGO_HOST=mongodb://admin:1234@mongo/
+      - REDIS_HOST=redis://redis:6379
 
   # Redis service
   redis:
