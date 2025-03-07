@@ -21,7 +21,6 @@ async def seats():
 async def create_seat(request: Seat):
     db = DB()
     mongo_seat = await db.booking_collection.find_one({"seat_id": request.seat_id})
-    print(mongo_seat)
     if mongo_seat:
         raise HTTPException(status_code=409, detail="id was used before")
 
