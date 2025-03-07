@@ -74,9 +74,9 @@ async def cancel_seat(request: CancelRequest, background_tasks: BackgroundTasks)
         raise HTTPException(status_code = 406, detail="Seat is booked for someone else")
     if mongo_seat["status"] != "booked":
         raise HTTPException(status_code=406, detail="Seat is not booked!")
-    if reserve_seat and reserve_seat["status"] not in ["booked", "reserved"]:
+    if reserve_seat and reserve_seat["status"] != "reserved":
         raise HTTPException(status_code = 406, detail="Seat is available")
-    if reserve_seat and reserve_seat["user_id"] == request.user_id:
+    if reserve_seat and reserve_seat["user_id"] != request.user_id:
         raise HTTPException(status_code = 406, detail="Seat is reserved for someone else")
 
 
